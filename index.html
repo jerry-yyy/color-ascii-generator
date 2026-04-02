@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Color ASCII Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <div class="hero-actions">
+            <button id="languageToggle" class="ghost-button language-button" type="button" aria-label="Switch language">
+              🇺🇸 EN
+            </button>
+          </div>
+          <p class="eyebrow" data-i18n="hero.eyebrow">图像与文本双向转换</p>
+          <h1 data-i18n="hero.title">Color ASCII Generator</h1>
+          <p class="hero-copy" data-i18n="hero.copy">支持图像转彩色 ASCII，也支持把导出文本重新渲染成图像预览。</p>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="panel controls-panel">
+          <div class="panel-title">
+            <h2 data-i18n="controls.title">输入与参数</h2>
+          </div>
+
+          <label class="upload-zone" for="imageInput" id="dropZone">
+            <input id="imageInput" type="file" accept="image/*" />
+            <span class="upload-title" data-i18n="controls.uploadTitle">拖拽图片到这里，或点击上传</span>
+            <span class="upload-subtitle" data-i18n="controls.uploadSubtitle">支持 PNG / JPG，透明背景也能直接生成</span>
+          </label>
+
+          <div class="source-preview-wrap">
+            <canvas id="sourceCanvas" aria-label="Source preview"></canvas>
+          </div>
+
+          <div class="controls-grid">
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.renderMode">输出模式</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="renderMode"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <select id="renderMode">
+                <option value="ascii" data-i18n="options.renderAscii">经典 ASCII</option>
+                <option value="blocks" data-i18n="options.renderBlocks">半块字符</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.exportMode">导出格式</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="exportMode"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <select id="exportMode">
+                <option value="ansi" data-i18n="options.exportAnsi">True Color ANSI</option>
+                <option value="html" data-i18n="options.exportHtml">HTML Export</option>
+                <option value="plain" data-i18n="options.plainText">纯文本</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.charsetPreset">字符集</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="charsetPreset"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <select id="charsetPreset">
+                <option value="classic" data-i18n="options.charsetClassic">Classic</option>
+                <option value="dense" data-i18n="options.charsetDense">Dense</option>
+                <option value="shaded" data-i18n="options.charsetShaded">Shaded</option>
+                <option value="minimal" data-i18n="options.charsetMinimal">Minimal</option>
+                <option value="custom" data-i18n="options.custom">自定义</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.customCharset">自定义字符集</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="customCharset"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <input id="customCharset" type="text" value=" .,:;i1tfLCG08@" spellcheck="false" />
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.width">宽度</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="widthRange,widthInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="widthRange" type="range" min="40" max="220" value="96" />
+                <input id="widthInput" type="number" min="40" max="220" value="96" />
+              </div>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.aspect">纵横修正</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="aspectRange,aspectInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="aspectRange" type="range" min="0.3" max="0.8" step="0.01" value="0.55" />
+                <input id="aspectInput" type="number" min="0.3" max="0.8" step="0.01" value="0.55" />
+              </div>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.brightness">亮度</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="brightnessRange,brightnessInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="brightnessRange" type="range" min="-100" max="100" value="0" />
+                <input id="brightnessInput" type="number" min="-100" max="100" value="0" />
+              </div>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.contrast">对比度</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="contrastRange,contrastInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="contrastRange" type="range" min="-100" max="100" value="0" />
+                <input id="contrastInput" type="number" min="-100" max="100" value="0" />
+              </div>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.saturation">饱和度</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="saturationRange,saturationInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="saturationRange" type="range" min="-100" max="100" value="0" />
+                <input id="saturationInput" type="number" min="-100" max="100" value="0" />
+              </div>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.gamma">Gamma</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="gammaRange,gammaInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="gammaRange" type="range" min="0.4" max="2.4" step="0.01" value="1" />
+                <input id="gammaInput" type="number" min="0.4" max="2.4" step="0.01" value="1" />
+              </div>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.whiteThreshold">背景判白</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="whiteThresholdRange,whiteThresholdInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="whiteThresholdRange" type="range" min="200" max="255" value="240" />
+                <input id="whiteThresholdInput" type="number" min="200" max="255" value="240" />
+              </div>
+            </label>
+
+            <label class="control">
+              <div class="control-head">
+                <span data-i18n="controls.alphaThreshold">Alpha 截断</span>
+                <button
+                  class="reset-button"
+                  data-reset-target="alphaThresholdRange,alphaThresholdInput"
+                  type="button"
+                  title="重置为默认值"
+                  aria-label="重置为默认值"
+                >
+                  ⟲
+                </button>
+              </div>
+              <div class="range-input-row">
+                <input id="alphaThresholdRange" type="range" min="0" max="255" value="16" />
+                <input id="alphaThresholdInput" type="number" min="0" max="255" value="16" />
+              </div>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div class="toggle-item">
+              <label class="toggle">
+                <input id="invertToggle" type="checkbox" />
+                <span data-i18n="toggles.invert">反转明暗映射</span>
+              </label>
+              <button
+                class="reset-button"
+                data-reset-target="invertToggle"
+                type="button"
+                title="重置为默认值"
+                aria-label="重置为默认值"
+              >
+                ⟲
+              </button>
+            </div>
+
+            <div class="toggle-item">
+              <label class="toggle">
+                <input id="trimBackgroundToggle" type="checkbox" checked />
+                <span data-i18n="toggles.trimBackground">自动清理背景</span>
+              </label>
+              <button
+                class="reset-button"
+                data-reset-target="trimBackgroundToggle"
+                type="button"
+                title="重置为默认值"
+                aria-label="重置为默认值"
+              >
+                ⟲
+              </button>
+            </div>
+
+            <div class="toggle-item">
+              <label class="toggle">
+                <input id="defringeToggle" type="checkbox" checked />
+                <span data-i18n="toggles.defringe">去白边</span>
+              </label>
+              <button
+                class="reset-button"
+                data-reset-target="defringeToggle"
+                type="button"
+                title="重置为默认值"
+                aria-label="重置为默认值"
+              >
+                ⟲
+              </button>
+            </div>
+
+            <div class="toggle-item">
+              <label class="toggle">
+                <input id="fastfetchCompactToggle" type="checkbox" />
+                <span data-i18n="toggles.fastfetchCompact">Fastfetch 紧凑导出</span>
+              </label>
+              <button
+                class="reset-button"
+                data-reset-target="fastfetchCompactToggle"
+                type="button"
+                title="重置为默认值"
+                aria-label="重置为默认值"
+              >
+                ⟲
+              </button>
+            </div>
+
+            <div class="toggle-item">
+              <label class="toggle">
+                <input id="useColorToggle" type="checkbox" checked />
+                <span data-i18n="toggles.useColor">保留颜色</span>
+              </label>
+              <button
+                class="reset-button"
+                data-reset-target="useColorToggle"
+                type="button"
+                title="重置为默认值"
+                aria-label="重置为默认值"
+              >
+                ⟲
+              </button>
+            </div>
+
+            <div class="toggle-item">
+              <label class="toggle">
+                <input id="showBackgroundToggle" type="checkbox" />
+                <span data-i18n="toggles.showBackground">显示浅色背景</span>
+              </label>
+              <button
+                class="reset-button"
+                data-reset-target="showBackgroundToggle"
+                type="button"
+                title="重置为默认值"
+                aria-label="重置为默认值"
+              >
+                ⟲
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel preview-panel">
+          <div class="panel-title">
+            <h2 data-i18n="preview.title">图像转文本</h2>
+            <div class="panel-actions">
+              <button id="copyOutput" type="button" data-i18n="preview.copy">复制输出</button>
+              <button id="downloadOutput" type="button" data-i18n="preview.download">下载文本</button>
+            </div>
+          </div>
+
+          <div class="stats-bar" id="statsBar">
+            <span data-i18n="preview.waiting">上传图片后，这里会显示统计信息。</span>
+          </div>
+
+          <div class="ascii-stage" id="asciiStage">
+            <canvas id="asciiPreviewCanvas" aria-label="ASCII preview"></canvas>
+          </div>
+
+          <label class="output-box">
+            <span data-i18n="preview.output">导出内容</span>
+            <textarea id="outputText" spellcheck="false"></textarea>
+          </label>
+
+          <section class="import-preview-panel">
+            <div class="panel-title">
+              <h2 data-i18n="import.title">文本转图像</h2>
+              <div class="panel-actions">
+                <button id="useCurrentOutput" type="button" data-i18n="import.useCurrent">使用当前导出</button>
+                <button id="renderImportedText" type="button" data-i18n="import.render">渲染文本</button>
+              </div>
+            </div>
+
+            <label class="output-box">
+              <span data-i18n="import.input">输入内容</span>
+              <textarea id="importText" spellcheck="false"></textarea>
+            </label>
+
+            <label class="upload-zone import-upload" for="importTextFile">
+              <input id="importTextFile" type="file" accept=".txt,.ansi,.log,.html,.htm,.asc" />
+              <span class="upload-title" data-i18n="import.uploadTitle">上传 TXT / ANSI / HTML 文件</span>
+              <span class="upload-subtitle" data-i18n="import.uploadSubtitle">也可以直接粘贴导出内容，再渲染成图像预览</span>
+            </label>
+
+            <div class="ascii-stage import-stage" id="importStage">
+              <canvas id="importPreviewCanvas" aria-label="Text render preview"></canvas>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
